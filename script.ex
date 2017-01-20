@@ -32,12 +32,16 @@ get_messages_pre_private_channels = fn(x) ->
   [public_chans_percent, 0.0, direct_msg_percent]
 end
 
+# open mbox, and split on each "From " line and remove any empty lines
 emails = File.read!("MilwaukeeSlackData.mbox")
          |> String.split(~r/From \d+/)
          |> Enum.reject(&(&1 == ""))
 
+# open new csv file
 file = File.open!("data.csv", [:write])
+# write csv header
 IO.binwrite(file, "date,total,public,private,direct,files\n")
+# for each email, get date and relevant stats, and write to the csv file
 Enum.each(emails, fn(x) ->
   [_, day, month, year] = Regex.run(~r/Date:.* (\d{1,2}) (\w{3}) (\d{4})/, x)
   date = "#{year}-#{Map.fetch!(months, month)}-#{String.pad_leading(day, 2, "0")}"
